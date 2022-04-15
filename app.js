@@ -2,6 +2,13 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 
+const mongoSanitize = require('express-mongo-sanitize');
+const helmet = require('helmet')
+const rateLimit = require('express-rate-limit');
+const hpp = require('hpp');
+const xss = require('xss-clean');
+const cors = require("cors");
+ 
 const port = 3000;
 const mongoose = require('mongoose');
 let dev_db_url = 'mongodb+srv://Ravaiz:ravaizww123@cluster0.bcudu.mongodb.net/DevCamper_db?retryWrites=true&w=majority';
@@ -21,9 +28,36 @@ app.use(function (req, res, next) {
   next();
 });
 
+// Sanitize data
+app.use(mongoSanitize({
+  allowDots: true,
+    replaceWith: '_'
+}));
+
+// Set security headers
+app.use(helmet())
+
+// Rate limiting
+app.enable("trust proxy");
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, 
+    max: 10
+})
+app.use(limiter);
+
+// Prevent http param pollution
+app.use(hpp());
+
+// Prevent XSS attacks
+app.use(xss());
+
+// Enable CORS
+app.use(cors());
+
+
+
 const bootcamp = require('./routes/bootcamp');
 app.use('/api/bootcamp', bootcamp);
-
 
 const user = require('./routes/user');
 app.use('/api',user);
@@ -31,12 +65,12 @@ app.use('/api',user);
 const auth = require('./routes/auth');
 app.use('/api',auth);
 
+
 app.use('*', (req, res, next) => {
   Promise.resolve().then(() => {
       return next(err);
   }).catch(next) 
 })
-
 
 
 app.use(function (err, req, res, next) {

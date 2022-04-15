@@ -7,7 +7,7 @@ var smtpTransport = require('nodemailer-smtp-transport');
 
 
 exports.log_in = async function (req, res) {
-
+  try{
   let user = await User.findOne({ email: req.body.email });
   if (!user) return res.status(404).send('Invalid email or password');
 
@@ -19,7 +19,9 @@ exports.log_in = async function (req, res) {
       token
     });
   });
-
+}catch(err){
+  return res.status(404).send("Invalid email or password");
+}
 
 };
 
