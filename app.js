@@ -40,7 +40,7 @@ app.use(helmet())
 // Rate limiting
 app.enable("trust proxy");
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, 
+    windowMs: 10 * 60 * 1000, 
     max: 10
 })
 app.use(limiter);
